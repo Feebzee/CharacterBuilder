@@ -15,6 +15,7 @@ public class BuilderGUI extends Application {
         Character myChar = new Character();
         BorderPane borderPane = new BorderPane();
         GridPane grid = new GridPane(100,100);
+        HBox displayChar = new HBox();
         grid.setGridLinesVisible(true);
 
         grid.add(new Label("Name: "), 0,0);
@@ -40,8 +41,11 @@ public class BuilderGUI extends Application {
         myChar.setPower(new Power(powerNameField.getText(),
                 Integer.parseInt(powerLevelField.getText()),
                 myChar.getSpecies().getSpeciesName()));
+        displayChar.getChildren().add(new Label(myChar.toString()));
 
         borderPane.setCenter(grid);
+        borderPane.setBottom(displayChar);
+
         Scene scene = new Scene(borderPane);
         stage.setScene(scene);
     }
