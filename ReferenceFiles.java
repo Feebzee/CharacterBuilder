@@ -15,20 +15,33 @@ public class ReferenceFiles{
             e.printStackTrace();
         }
     }
-    public static <E> ArrayList<E> outputFile(File file){
-        ArrayList<E> toRead = new ArrayList<>();
+    public static ArrayList<String> outputFile(File file, int[] numRef){
+        ArrayList<String> toRead = new ArrayList<>();
         try{
             Scanner reader = new Scanner(file);
             while(file.exists() && reader.hasNext()){
-                E toAdd = (E)reader.next();
                 for(int i=0; i<toRead.size(); i++){
-                    toRead.add(toAdd);
+                    toRead.add(reader.nextLine());
+                    System.out.println(reader.nextLine());
                 }
             }
             reader.close();
         }catch(IOException e){
             System.out.println("Error");
         }
-        return toRead;
+        return sortArrayList(toRead,numRef);
+    }
+
+    private static ArrayList<String> sortArrayList(ArrayList<String> toSort, int[] refNums){
+        ArrayList<String> sorted = new ArrayList<>();
+        for(int k= toSort.size()-1; k>=0; k++){
+            char firstLetter = toSort.get(k).charAt(0);
+            if(k != refNums[k]){
+                String temp = toSort.get(k);
+                toSort.set(k, toSort.get(k+1));
+                toSort.set(k+1, temp);
+            }
+        }
+        return sorted;
     }
 }
