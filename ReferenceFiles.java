@@ -1,26 +1,61 @@
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
-
-public class ReferenceFiles{
-    public static <E> void inputFile(FileWriter writer, E input){
-        try{
-            writer.write(input.toString());
+class Charthread<E,D> implements Runnable {
+    private Thread t;
+    private String name;
+    private Map<E,D> chars;
+    public Charthread(String n,Map<E,D> chs){
+        this.name = n;
+        this.chars = chs;
+    }
+    @Override
+    public void run() {
+        File f = new File("");
+        System.out.println("Running thread ");
+        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f))){
+            for(E e : chars.keySet()){
+                System.out.println("adding");
+                System.out.println(chars.get(e));
+                oos.writeObject(chars.get(e));
+            }
         }catch(IOException e){
             System.out.println("Error");
             e.printStackTrace();
         }
     }
-    public static ArrayList<String> outputFile(File file){
+    public void start(){
+        System.out.println("Thread started");
+        if(t == null){
+            t = new Thread(this,name);
+            t.start();
+        }
+    }
+}
+public class ReferenceFiles{
+    public static <E,D> void outputFile(Map<E,D> myChars){
+        Map<E,D> chars1 = new HashMap<>();
+        Map<E,D> chars2 = new HashMap<>();
+        for(E e : myChars.keySet()) {
+            for (int i=0; i < myChars.size(); i++) {
+                if(i%2 != 0){
+                    chars2.put(e, myChars.get(e));
+                }else{
+                    chars1.put(e, myChars.get(e));
+                }
+            }
+        }
+        Charthread<E,D> threadA = new Charthread<>("Thread A",chars1);
+        threadA.start();
+        Charthread<E,D> threadB = new Charthread<>("Thread B",chars2);
+        threadB.start();
+    }
+    public static ArrayList<String> inputFile(File file){
         ArrayList<String> toRead = new ArrayList<>();
         try{
             Scanner reader = new Scanner(file);
@@ -53,26 +88,6 @@ public class ReferenceFiles{
             toSort.set(k,temp);
         }
         return toSort;
-    }
-    protected static void saveCharsToFile(Map<Boolean,Character> chars){
-        try {
-            File f = new File("CharacterFile");
-            FileWriter w = new FileWriter(f);
-            for (boolean b : chars.keySet()) {
-                String s = "";
-                if (b) {
-                    s += "Main, ";
-                } else {
-                    s += "Side, ";
-                }
-                Character c = chars.get(b);
-                s += c.getName() + ", " + c.getSpecies() + ", " + c.getPower();
-                inputFile(w,s);
-            }
-            w.close();
-        }catch(IOException ioe){
-            ioe.printStackTrace();
-        }
     }
 
     public static GridPane buildChar(boolean isRandom,ArrayList<Character> myChars){
@@ -134,7 +149,11 @@ public class ReferenceFiles{
     private static String buildField(GridPane grid,int row,String label,TextField name){
         grid.add(new Label(label),0,row);
         grid.add(name,1,row);
-        return name.getText();
+        String[] n = {""};
+        name.setOnAction(a->{
+            n[0] = name.getText();
+        });
+        return n[0];
     }
 
     protected static HBox displayChar(ArrayList<Character> myChars){
